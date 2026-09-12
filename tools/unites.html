@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Convertisseur d'unités — Atelier</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header class="tool-header">
+  <a class="back-link" href="../index.html" id="backLink"></a>
+  <div class="breadcrumb">Calculs / <strong>Convertisseur d'unités</strong></div>
+  <div class="header-spacer"></div>
+  <button class="theme-toggle" id="themeToggle"></button>
+</header>
+
+<main class="tool-main">
+  <h1>Convertisseur d'unités</h1>
+  <p class="tool-desc">Longueur, poids, volume, température et vitesse.</p>
+
+  <div class="panel">
+    <div class="field">
+      <label>Catégorie</label>
+      <select id="category"></select>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Valeur</label>
+        <input type="number" id="value" value="1">
+      </div>
+      <div class="field">
+        <label>De</label>
+        <select id="from"></select>
+      </div>
+      <div class="field">
+        <label>Vers</label>
+        <select id="to"></select>
+      </div>
+    </div>
+    <div class="result" id="result"><span class="label">Résultat</span>—</div>
+  </div>
+</main>
+
+<script src="../js/icons.js"></script>
+<script src="../js/common.js"></script>
+<script>
+  document.getElementById("backLink").innerHTML = icon("back") + " Accueil";
+  initThemeToggle("themeToggle");
+
+  // Unités converties via un facteur vers une unité de base par catégorie.
+  // Température gérée à part (non linéaire).
+  const UNITS = {
+    longueur: { base: "m", factors: { mm: 0.001, cm: 0.01, m: 1, km: 1000, po: 0.0254, pi: 0.3048, mi: 1609.344 } },
+    poids: { base: "kg", factors: { mg: 1e-6, g: 0.001, kg: 1, t: 1000, oz: 0.0283495, lb: 0.453592 } },
+    volume: { base: "l", factors: { ml: 0.001, l: 1, "m³": 1000, "tasse": 0.236588, "gal (US)": 3.78541 } },
+    vitesse: { base: "m/s", factors: { "m/s": 1, "km/h": 0.277778, "mph": 0.44704, "noeud": 0.514444 } },
+    temperature: { base: "°C", factors: null }
+  };
+
+  const labels = { longueur: "Longueur", poids: "Poids", volume: "Volume", vitesse: "Vitesse", temperature: "Température" };
+
+  const catEl = document.getElementById("category");
+  const fromEl = document.getElementById("from");
+  const toEl = document.getElementById("to");
+  const valueEl = document.getElementById("value");
+  const resultEl = document.getElementById("result");
+
+  Object.keys(UNITS).forEach(k => catEl.innerHTML += `<option value="${k}">${labels[k]}</option>`);
+
+  function fillUnitSelects() {
+    const cat = UNITS[catEl.value];
+    const units = cat.factors ? Object.keys(cat.factors) : ["°C", "°F", "K"];
+    fromEl.innerHTML = units.map(u => `<option value="${u}">${u}</option>`).join("");
+    toEl.innerHTML = units.map(u => `<option value="${u}">${u}</option>`).join("");
+    toEl.selectedIndex = Math.min(1, units.length - 1);
+  }
+
+  function toCelsius(v, u) {
+    if (u === "°C") return v;
+    if (u === "°F") return (v - 32) * 5 / 9;
+    if (u === "K") return v - 273.15;
+  }
+  function fromCelsius(v, u) {
+    if (u === "°C") return v;
+    if (u === "°F") return v * 9 / 5 + 32;
+    if (u === "K") return v + 273.15;
+  }
+
+  function update() {
+    const value = parseFloat(valueEl.value.replace(",", "."));
+    if (isNaN(value)) { resultEl.innerHTML = '<span class="label">Résultat</span>—'; return; }
+    const cat = UNITS[catEl.value];
+    let out;
+    if (catEl.value === "temperature") {
+      out = fromCelsius(toCelsius(value, fromEl.value), toEl.value);
+    } else {
+      const base = value * cat.factors[fromEl.value];
+      out = base / cat.factors[toEl.value];
+    }
+    resultEl.innerHTML = `<span class="label">Résultat</span>${value} ${fromEl.value} = ${parseFloat(out.toFixed(6))} ${toEl.value}`;
+  }
+
+  catEl.addEventListener("change", () => { fillUnitSelects(); update(); });
+  [fromEl, toEl, valueEl].forEach(el => el.addEventListener("input", update));
+  [fromEl, toEl].forEach(el => el.addEventListener("change", update));
+
+  fillUnitSelects();
+  update();
+</script>
+</body>
+</html>

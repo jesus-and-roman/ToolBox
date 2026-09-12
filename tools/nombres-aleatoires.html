@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Générateur de nombres aléatoires — Atelier</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header class="tool-header">
+  <a class="back-link" href="../index.html" id="backLink"></a>
+  <div class="breadcrumb">Calculs / <strong>Générateur de nombres aléatoires</strong></div>
+  <div class="header-spacer"></div>
+  <button class="theme-toggle" id="themeToggle"></button>
+</header>
+
+<main class="tool-main">
+  <h1>Générateur de nombres aléatoires</h1>
+  <p class="tool-desc">Choisis une plage et une quantité, avec ou sans répétition.</p>
+
+  <div class="panel">
+    <div class="field-row">
+      <div class="field">
+        <label>Minimum</label>
+        <input type="number" id="min" value="1">
+      </div>
+      <div class="field">
+        <label>Maximum</label>
+        <input type="number" id="max" value="100">
+      </div>
+      <div class="field">
+        <label>Quantité</label>
+        <input type="number" id="qty" value="1" min="1">
+      </div>
+    </div>
+    <div class="field">
+      <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+        <input type="checkbox" id="unique" style="width:auto;"> Sans répétition
+      </label>
+    </div>
+    <button class="btn" id="generate">Générer</button>
+    <div class="result" id="result" style="margin-top:20px;"><span class="label">Résultat</span>—</div>
+  </div>
+</main>
+
+<script src="../js/icons.js"></script>
+<script src="../js/common.js"></script>
+<script>
+  document.getElementById("backLink").innerHTML = icon("back") + " Accueil";
+  initThemeToggle("themeToggle");
+
+  const minEl = document.getElementById("min");
+  const maxEl = document.getElementById("max");
+  const qtyEl = document.getElementById("qty");
+  const uniqueEl = document.getElementById("unique");
+  const resultEl = document.getElementById("result");
+
+  document.getElementById("generate").addEventListener("click", () => {
+    const min = Math.round(parseFloat(minEl.value));
+    const max = Math.round(parseFloat(maxEl.value));
+    const qty = Math.max(1, Math.round(parseFloat(qtyEl.value)));
+
+    if (isNaN(min) || isNaN(max) || min > max) {
+      resultEl.innerHTML = '<span class="label">Résultat</span>Vérifie que le minimum est inférieur ou égal au maximum.';
+      return;
+    }
+    if (uniqueEl.checked && qty > (max - min + 1)) {
+      resultEl.innerHTML = '<span class="label">Résultat</span>Impossible de générer autant de nombres uniques sur cette plage.';
+      return;
+    }
+
+    let numbers = [];
+    if (uniqueEl.checked) {
+      const pool = [];
+      for (let i = min; i <= max; i++) pool.push(i);
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      numbers = pool.slice(0, qty);
+    } else {
+      for (let i = 0; i < qty; i++) numbers.push(Math.floor(Math.random() * (max - min + 1)) + min);
+    }
+
+    resultEl.innerHTML = `<span class="label">Résultat</span>${numbers.join(", ")}`;
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calcul de pourcentage — Atelier</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header class="tool-header">
+  <a class="back-link" href="../index.html" id="backLink"></a>
+  <div class="breadcrumb">Calculs / <strong>Calcul de pourcentage</strong></div>
+  <div class="header-spacer"></div>
+  <button class="theme-toggle" id="themeToggle"></button>
+</header>
+
+<main class="tool-main">
+  <h1>Calcul de pourcentage</h1>
+  <p class="tool-desc">Trois calculs courants, réunis au même endroit.</p>
+
+  <div class="panel">
+    <div class="field">
+      <label>Combien vaut <span id="l1a">X</span> % de <span id="l1b">Y</span> ?</label>
+      <div class="field-row">
+        <div class="field"><input type="number" id="p1x" placeholder="X"></div>
+        <div class="field"><input type="number" id="p1y" placeholder="Y"></div>
+      </div>
+      <div class="result" id="r1"><span class="label">Résultat</span>—</div>
+    </div>
+
+    <hr style="border-color: var(--border); margin: 24px 0;">
+
+    <div class="field">
+      <label>X représente quel pourcentage de Y ?</label>
+      <div class="field-row">
+        <div class="field"><input type="number" id="p2x" placeholder="X"></div>
+        <div class="field"><input type="number" id="p2y" placeholder="Y"></div>
+      </div>
+      <div class="result" id="r2"><span class="label">Résultat</span>—</div>
+    </div>
+
+    <hr style="border-color: var(--border); margin: 24px 0;">
+
+    <div class="field">
+      <label>Variation entre une valeur de départ et une valeur d'arrivée</label>
+      <div class="field-row">
+        <div class="field"><input type="number" id="p3a" placeholder="Valeur de départ"></div>
+        <div class="field"><input type="number" id="p3b" placeholder="Valeur d'arrivée"></div>
+      </div>
+      <div class="result" id="r3"><span class="label">Résultat</span>—</div>
+    </div>
+  </div>
+</main>
+
+<script src="../js/icons.js"></script>
+<script src="../js/common.js"></script>
+<script>
+  document.getElementById("backLink").innerHTML = icon("back") + " Accueil";
+  initThemeToggle("themeToggle");
+
+  const num = (v) => v === "" ? NaN : parseFloat(v.replace(",", "."));
+
+  function bind(ids, fn, resultId) {
+    ids.forEach(id => document.getElementById(id).addEventListener("input", update));
+    function update() {
+      const vals = ids.map(id => num(document.getElementById(id).value));
+      const el = document.getElementById(resultId);
+      if (vals.some(isNaN)) { el.innerHTML = '<span class="label">Résultat</span>—'; return; }
+      el.innerHTML = `<span class="label">Résultat</span>${fn(...vals)}`;
+    }
+  }
+
+  bind(["p1x", "p1y"], (x, y) => {
+    const r = (x / 100) * y;
+    return `${parseFloat(r.toFixed(4))}`.replace(".", ",");
+  }, "r1");
+
+  bind(["p2x", "p2y"], (x, y) => {
+    if (y === 0) return "Erreur (division par 0)";
+    const r = (x / y) * 100;
+    return `${parseFloat(r.toFixed(4))} %`.replace(".", ",");
+  }, "r2");
+
+  bind(["p3a", "p3b"], (a, b) => {
+    if (a === 0) return "Erreur (division par 0)";
+    const r = ((b - a) / a) * 100;
+    const sign = r >= 0 ? "+" : "";
+    return `${sign}${parseFloat(r.toFixed(4))} %`.replace(".", ",");
+  }, "r3");
+</script>
+</body>
+</html>

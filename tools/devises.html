@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Convertisseur de devises — Atelier</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header class="tool-header">
+  <a class="back-link" href="../index.html" id="backLink"></a>
+  <div class="breadcrumb">Calculs / <strong>Convertisseur de devises</strong></div>
+  <div class="header-spacer"></div>
+  <button class="theme-toggle" id="themeToggle"></button>
+</header>
+
+<main class="tool-main">
+  <h1>Convertisseur de devises</h1>
+  <p class="tool-desc">Taux indicatifs (modifiables manuellement) — cet outil fonctionne hors ligne et n'appelle aucun service de taux en temps réel.</p>
+
+  <div class="panel">
+    <div class="field-row">
+      <div class="field">
+        <label>Montant</label>
+        <input type="number" id="amount" value="1">
+      </div>
+      <div class="field">
+        <label>De</label>
+        <select id="from"></select>
+      </div>
+      <div class="field">
+        <label>Vers</label>
+        <select id="to"></select>
+      </div>
+    </div>
+    <div class="result" id="result"><span class="label">Résultat</span>—</div>
+
+    <div class="field" style="margin-top: 24px;">
+      <label>Taux par rapport au dollar canadien (CAD) — modifiable</label>
+      <div id="rateList"></div>
+    </div>
+  </div>
+</main>
+
+<script src="../js/icons.js"></script>
+<script src="../js/common.js"></script>
+<script>
+  document.getElementById("backLink").innerHTML = icon("back") + " Accueil";
+  initThemeToggle("themeToggle");
+
+  // Taux indicatifs : combien vaut 1 CAD dans chaque devise (approximatifs, à ajuster).
+  const rates = {
+    CAD: 1,
+    USD: 0.73,
+    EUR: 0.68,
+    GBP: 0.58,
+    CHF: 0.65,
+    JPY: 108.0,
+    CNY: 5.3,
+    MXN: 13.9,
+    AUD: 1.12,
+    BRL: 4.1
+  };
+
+  const fromEl = document.getElementById("from");
+  const toEl = document.getElementById("to");
+  const amountEl = document.getElementById("amount");
+  const resultEl = document.getElementById("result");
+  const rateListEl = document.getElementById("rateList");
+
+  Object.keys(rates).forEach(code => {
+    fromEl.innerHTML += `<option value="${code}">${code}</option>`;
+    toEl.innerHTML += `<option value="${code}">${code}</option>`;
+  });
+  fromEl.value = "CAD";
+  toEl.value = "USD";
+
+  function renderRateInputs() {
+    rateListEl.innerHTML = Object.keys(rates).map(code => `
+      <div class="field-row" style="align-items:center; margin-bottom:8px;">
+        <span style="width:52px; color:var(--text-dim); font-family:var(--font-mono);">${code}</span>
+        <input type="number" step="0.0001" data-code="${code}" value="${rates[code]}" style="flex:1; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:var(--font-mono); padding:8px 10px;">
+      </div>`).join("");
+    rateListEl.querySelectorAll("input").forEach(inp => {
+      inp.addEventListener("input", () => {
+        rates[inp.dataset.code] = parseFloat(inp.value.replace(",", ".")) || 0;
+        update();
+      });
+    });
+  }
+
+  function update() {
+    const amount = parseFloat(amountEl.value.replace(",", "."));
+    const from = fromEl.value, to = toEl.value;
+    if (isNaN(amount)) { resultEl.innerHTML = '<span class="label">Résultat</span>—'; return; }
+    const inCad = amount / rates[from];
+    const converted = inCad * rates[to];
+    resultEl.innerHTML = `<span class="label">Résultat</span>${amount} ${from} ≈ ${parseFloat(converted.toFixed(4))} ${to}`;
+  }
+
+  [fromEl, toEl, amountEl].forEach(el => el.addEventListener("input", update));
+  [fromEl, toEl].forEach(el => el.addEventListener("change", update));
+
+  renderRateInputs();
+  update();
+</script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculatrice — Atelier</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header class="tool-header">
+  <a class="back-link" href="../index.html" id="backLink"></a>
+  <div class="breadcrumb">Calculs / <strong>Calculatrice</strong></div>
+  <div class="header-spacer"></div>
+  <button class="theme-toggle" id="themeToggle"></button>
+</header>
+
+<main class="tool-main">
+  <h1>Calculatrice</h1>
+  <p class="tool-desc">Les quatre opérations de base, avec pourcentage.</p>
+
+  <div class="panel">
+    <div class="calc-display">
+      <div class="prev" id="prev">&nbsp;</div>
+      <div class="curr" id="curr">0</div>
+    </div>
+    <div class="keypad" id="keypad">
+      <button class="key" data-k="C">C</button>
+      <button class="key" data-k="back">⌫</button>
+      <button class="key op" data-k="%">%</button>
+      <button class="key op" data-k="/">÷</button>
+
+      <button class="key" data-k="7">7</button>
+      <button class="key" data-k="8">8</button>
+      <button class="key" data-k="9">9</button>
+      <button class="key op" data-k="*">×</button>
+
+      <button class="key" data-k="4">4</button>
+      <button class="key" data-k="5">5</button>
+      <button class="key" data-k="6">6</button>
+      <button class="key op" data-k="-">−</button>
+
+      <button class="key" data-k="1">1</button>
+      <button class="key" data-k="2">2</button>
+      <button class="key" data-k="3">3</button>
+      <button class="key op" data-k="+">+</button>
+
+      <button class="key wide" data-k="0">0</button>
+      <button class="key" data-k=".">,</button>
+      <button class="key equals" data-k="=">=</button>
+    </div>
+  </div>
+</main>
+
+<script src="../js/icons.js"></script>
+<script src="../js/common.js"></script>
+<script>
+  document.getElementById("backLink").innerHTML = icon("back") + " Accueil";
+  initThemeToggle("themeToggle");
+
+  const prevEl = document.getElementById("prev");
+  const currEl = document.getElementById("curr");
+  let curr = "0", prev = null, op = null, resetNext = false;
+
+  function fmt(n) {
+    if (!isFinite(n)) return "Erreur";
+    const s = parseFloat(n.toPrecision(12)).toString();
+    return s.replace(".", ",");
+  }
+
+  function compute(a, b, o) {
+    a = parseFloat(a.replace(",", "."));
+    b = parseFloat(b.replace(",", "."));
+    switch (o) {
+      case "+": return a + b;
+      case "-": return a - b;
+      case "*": return a * b;
+      case "/": return b === 0 ? Infinity : a / b;
+      default: return b;
+    }
+  }
+
+  function paint() {
+    currEl.textContent = curr;
+    prevEl.textContent = prev !== null ? `${prev} ${opSymbol(op)}` : "\u00a0";
+  }
+
+  function opSymbol(o) {
+    return { "+": "+", "-": "−", "*": "×", "/": "÷" }[o] || "";
+  }
+
+  document.getElementById("keypad").addEventListener("click", e => {
+    const k = e.target.dataset.k;
+    if (!k) return;
+
+    if (k === "C") { curr = "0"; prev = null; op = null; resetNext = false; }
+    else if (k === "back") { curr = curr.length > 1 ? curr.slice(0, -1) : "0"; }
+    else if (k === "%") { curr = fmt(parseFloat(curr.replace(",", ".")) / 100); }
+    else if (["+", "-", "*", "/"].includes(k)) {
+      if (prev !== null && op && !resetNext) {
+        curr = fmt(compute(prev, curr, op));
+      }
+      prev = curr;
+      op = k;
+      resetNext = true;
+    } else if (k === "=") {
+      if (prev !== null && op) {
+        curr = fmt(compute(prev, curr, op));
+        prev = null; op = null;
+      }
+      resetNext = true;
+    } else if (k === ".") {
+      if (resetNext) { curr = "0"; resetNext = false; }
+      if (!curr.includes(",")) curr += ",";
+    } else {
+      if (resetNext || curr === "0") { curr = k; resetNext = false; }
+      else curr += k;
+    }
+    paint();
+  });
+
+  document.addEventListener("keydown", e => {
+    const map = { "Enter": "=", "Backspace": "back", "Escape": "C", ",": ".", ".": "." };
+    const key = map[e.key] || (/^[0-9+\-*/]$/.test(e.key) ? e.key : null);
+    if (key) document.querySelector(`[data-k="${key}"]`)?.click();
+  });
+
+  paint();
+</script>
+</body>
+</html>

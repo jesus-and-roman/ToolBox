@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atelier — boîte à outils en ligne</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="brand" id="brandIcon">Atelier</div>
+  <div class="search-box">
+    <span id="searchIcon"></span>
+    <input type="text" id="searchInput" placeholder="Chercher un outil…" autocomplete="off">
+  </div>
+  <div class="header-spacer"></div>
+  <button class="theme-toggle" id="themeToggle"></button>
+</header>
+
+<section class="intro">
+  <h1>Tout ce qu'il faut, rien de trop.</h1>
+  <p id="tagline"></p>
+</section>
+
+<main class="categories" id="categories"></main>
+
+<p class="no-results" id="noResults">Aucun outil ne correspond à cette recherche.</p>
+
+<footer class="site-footer">Aucune donnée envoyée à un serveur — chaque outil tourne dans ton navigateur.</footer>
+
+<script src="js/icons.js"></script>
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script>
+  document.getElementById("brandIcon").innerHTML = icon("calc") + " Atelier";
+  document.getElementById("searchIcon").innerHTML = icon("search");
+  document.getElementById("tagline").textContent = SITE.tagline;
+
+  const container = document.getElementById("categories");
+
+  function render(filter) {
+    const q = (filter || "").trim().toLowerCase();
+    container.innerHTML = "";
+    let totalShown = 0;
+
+    SITE.categories.forEach(cat => {
+      const tools = cat.tools.filter(t => !q || t.name.toLowerCase().includes(q));
+      if (q && tools.length === 0) return;
+      totalShown += tools.length;
+
+      const section = document.createElement("div");
+      section.className = "category";
+      section.innerHTML = `
+        <div class="category-head">
+          ${icon(cat.icon)}
+          <h2>${cat.title}</h2>
+          <span class="category-count">${cat.tools.length}</span>
+        </div>
+        <div class="tool-grid">
+          ${tools.map(t => t.href
+            ? `<a class="tool-card" href="${t.href}">${icon(cat.icon)}<span>${t.name}</span></a>`
+            : `<div class="tool-card soon">${icon(cat.icon)}<span>${t.name}</span><span class="soon-tag">Bientôt</span></div>`
+          ).join("")}
+        </div>`;
+      container.appendChild(section);
+    });
+
+    document.getElementById("noResults").style.display = (q && totalShown === 0) ? "block" : "none";
+  }
+
+  document.getElementById("searchInput").addEventListener("input", e => render(e.target.value));
+  initThemeToggle("themeToggle");
+  render("");
+</script>
+</body>
+</html>
