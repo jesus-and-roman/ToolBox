@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TVA / taxes — Atelier</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header class="tool-header">
+  <a class="back-link" href="../index.html" id="backLink"></a>
+  <div class="breadcrumb">Calculs / <strong>TVA / taxes</strong></div>
+  <div class="header-spacer"></div>
+  <button class="theme-toggle" id="themeToggle"></button>
+</header>
+
+<main class="tool-main">
+  <h1>TVA / taxes</h1>
+  <p class="tool-desc">Passe d'un montant hors taxes à toutes taxes comprises, ou l'inverse.</p>
+
+  <div class="panel">
+    <div class="field">
+      <label>Sens du calcul</label>
+      <select id="mode">
+        <option value="ht">J'ai un montant hors taxes (HT)</option>
+        <option value="ttc">J'ai un montant toutes taxes comprises (TTC)</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label id="amountLabel">Montant HT</label>
+        <input type="number" id="amount" placeholder="0,00">
+      </div>
+      <div class="field">
+        <label>Taux de taxe (%)</label>
+        <input type="number" id="rate" value="14.975" step="0.001">
+      </div>
+    </div>
+    <div class="result" id="result"><span class="label">Résultat</span>—</div>
+  </div>
+</main>
+
+<script src="../js/icons.js"></script>
+<script src="../js/common.js"></script>
+<script>
+  document.getElementById("backLink").innerHTML = icon("back") + " Accueil";
+  initThemeToggle("themeToggle");
+
+  const modeEl = document.getElementById("mode");
+  const amountEl = document.getElementById("amount");
+  const rateEl = document.getElementById("rate");
+  const labelEl = document.getElementById("amountLabel");
+  const resultEl = document.getElementById("result");
+
+  function money(n) {
+    return n.toLocaleString("fr-CA", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " $";
+  }
+
+  function update() {
+    labelEl.textContent = modeEl.value === "ht" ? "Montant HT" : "Montant TTC";
+    const amount = parseFloat(amountEl.value.replace(",", "."));
+    const rate = parseFloat(rateEl.value.replace(",", "."));
+    if (isNaN(amount) || isNaN(rate)) {
+      resultEl.innerHTML = '<span class="label">Résultat</span>—';
+      return;
+    }
+    let ht, taxe, ttc;
+    if (modeEl.value === "ht") {
+      ht = amount;
+      taxe = ht * (rate / 100);
+      ttc = ht + taxe;
+    } else {
+      ttc = amount;
+      ht = ttc / (1 + rate / 100);
+      taxe = ttc - ht;
+    }
+    resultEl.innerHTML = `
+      <span class="label">Détail</span>
+      HT&nbsp;: ${money(ht)}<br>
+      Taxe (${rate}%)&nbsp;: ${money(taxe)}<br>
+      TTC&nbsp;: ${money(ttc)}`;
+  }
+
+  modeEl.addEventListener("change", update);
+  amountEl.addEventListener("input", update);
+  rateEl.addEventListener("input", update);
+  update();
+</script>
+</body>
+</html>

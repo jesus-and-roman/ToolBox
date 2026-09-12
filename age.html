@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculateur d'âge — Atelier</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header class="tool-header">
+  <a class="back-link" href="../index.html" id="backLink"></a>
+  <div class="breadcrumb">Calculs / <strong>Calculateur d'âge</strong></div>
+  <div class="header-spacer"></div>
+  <button class="theme-toggle" id="themeToggle"></button>
+</header>
+
+<main class="tool-main">
+  <h1>Calculateur d'âge</h1>
+  <p class="tool-desc">Ton âge exact, en années, mois et jours.</p>
+
+  <div class="panel">
+    <div class="field-row">
+      <div class="field">
+        <label>Date de naissance</label>
+        <input type="date" id="birth">
+      </div>
+      <div class="field">
+        <label>Date de référence</label>
+        <input type="date" id="ref">
+      </div>
+    </div>
+    <div class="result" id="result"><span class="label">Résultat</span>—</div>
+  </div>
+</main>
+
+<script src="../js/icons.js"></script>
+<script src="../js/common.js"></script>
+<script>
+  document.getElementById("backLink").innerHTML = icon("back") + " Accueil";
+  initThemeToggle("themeToggle");
+
+  const birthEl = document.getElementById("birth");
+  const refEl = document.getElementById("ref");
+  const resultEl = document.getElementById("result");
+
+  refEl.valueAsDate = new Date();
+
+  function update() {
+    if (!birthEl.value || !refEl.value) { resultEl.innerHTML = '<span class="label">Résultat</span>—'; return; }
+    const birth = new Date(birthEl.value + "T00:00:00");
+    const ref = new Date(refEl.value + "T00:00:00");
+    if (birth > ref) { resultEl.innerHTML = '<span class="label">Résultat</span>La date de naissance est après la date de référence.'; return; }
+
+    let years = ref.getFullYear() - birth.getFullYear();
+    let months = ref.getMonth() - birth.getMonth();
+    let days = ref.getDate() - birth.getDate();
+
+    if (days < 0) {
+      months -= 1;
+      const prevMonth = new Date(ref.getFullYear(), ref.getMonth(), 0);
+      days += prevMonth.getDate();
+    }
+    if (months < 0) { months += 12; years -= 1; }
+
+    const totalDays = Math.round((ref - birth) / 86400000);
+
+    resultEl.innerHTML = `
+      <span class="label">Âge</span>
+      ${years} an${years > 1 ? "s" : ""}, ${months} mois, ${days} jour${days > 1 ? "s" : ""}<br>
+      <span class="label" style="margin-top:10px;">Soit</span>
+      ${totalDays.toLocaleString("fr-CA")} jours au total`;
+  }
+
+  birthEl.addEventListener("input", update);
+  refEl.addEventListener("input", update);
+</script>
+</body>
+</html>

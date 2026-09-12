@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Différence entre deux dates — Atelier</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header class="tool-header">
+  <a class="back-link" href="../index.html" id="backLink"></a>
+  <div class="breadcrumb">Calculs / <strong>Différence entre deux dates</strong></div>
+  <div class="header-spacer"></div>
+  <button class="theme-toggle" id="themeToggle"></button>
+</header>
+
+<main class="tool-main">
+  <h1>Différence entre deux dates</h1>
+  <p class="tool-desc">Compte les jours, semaines, mois et années entre deux dates.</p>
+
+  <div class="panel">
+    <div class="field-row">
+      <div class="field">
+        <label>Date de départ</label>
+        <input type="date" id="d1">
+      </div>
+      <div class="field">
+        <label>Date d'arrivée</label>
+        <input type="date" id="d2">
+      </div>
+    </div>
+    <div class="result" id="result"><span class="label">Résultat</span>—</div>
+  </div>
+</main>
+
+<script src="../js/icons.js"></script>
+<script src="../js/common.js"></script>
+<script>
+  document.getElementById("backLink").innerHTML = icon("back") + " Accueil";
+  initThemeToggle("themeToggle");
+
+  const d1El = document.getElementById("d1");
+  const d2El = document.getElementById("d2");
+  const resultEl = document.getElementById("result");
+
+  d1El.valueAsDate = new Date();
+
+  function update() {
+    if (!d1El.value || !d2El.value) { resultEl.innerHTML = '<span class="label">Résultat</span>—'; return; }
+    let a = new Date(d1El.value + "T00:00:00");
+    let b = new Date(d2El.value + "T00:00:00");
+    const sens = a > b ? -1 : 1;
+    if (a > b) [a, b] = [b, a];
+
+    const totalDays = Math.round((b - a) / 86400000);
+    const weeks = Math.floor(totalDays / 7);
+    const remDays = totalDays % 7;
+
+    let years = b.getFullYear() - a.getFullYear();
+    let months = b.getMonth() - a.getMonth();
+    let days = b.getDate() - a.getDate();
+    if (days < 0) { months -= 1; days += new Date(b.getFullYear(), b.getMonth(), 0).getDate(); }
+    if (months < 0) { months += 12; years -= 1; }
+
+    resultEl.innerHTML = `
+      <span class="label">Différence</span>
+      ${totalDays.toLocaleString("fr-CA")} jour${totalDays > 1 ? "s" : ""}
+      (${weeks} semaine${weeks > 1 ? "s" : ""} et ${remDays} jour${remDays > 1 ? "s" : ""})<br>
+      <span class="label" style="margin-top:10px;">Soit</span>
+      ${years} an${years > 1 ? "s" : ""}, ${months} mois, ${days} jour${days > 1 ? "s" : ""}
+      ${sens < 0 ? "<br><span class=\"label\" style=\"margin-top:10px;\">Note</span>Dates inversées automatiquement." : ""}`;
+  }
+
+  d1El.addEventListener("input", update);
+  d2El.addEventListener("input", update);
+</script>
+</body>
+</html>
